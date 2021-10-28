@@ -15,9 +15,121 @@ public class EchoClient {
 
 	private void start() throws IOException {
 		Socket socket = new Socket("localhost", PORT_NUMBER);
-		InputStream socketInputStream = socket.getInputStream();
-		OutputStream socketOutputStream = socket.getOutputStream();
+		// InputStream socketInputStream = socket.getInputStream();
+		// OutputStream socketOutputStream = socket.getOutputStream();
 
 		// Put your code here.
+
+		WriterThread writer = new WriterThread(socket);
+		ReaderThread reader = new ReaderThread(socket);
+
+		writer.start();
+		reader.start();
+		writer.join();
+		reader.join();
+	}
+
+	protected class WriterThread extends Thread {
+
+		OutputStream output;
+		Socket sock;
+
+		protected WriterThread (String name, Socket s) {
+			this.sock = s;
+			this.output = sock.getOutputStream;
+			super(name);
+		}
+
+		protected WriterThread (Socket s) {
+			this.sock = s;
+			this.output = socket.getOutputStream;
+			super();
+		}
+
+		@Override
+		public void run() {
+			try {
+                while(true){
+                    int nextByteOut;
+                    try {
+                        nextByteOut = System.in.read();
+                    } catch (IOException ioe) {
+                        System.out.println("Error reading from System.in");
+                        throw(ioe);
+                    }
+                    if(nextByteOut == -1) {
+                        try {
+                            sock.shutdownOutput();
+                        } catch (IOException ioe){
+                            System.out.println("Error closing output");
+                            throw(ioe);
+                        } finally {
+							break;
+						}
+                    } else {
+                        try {
+                            output.write(nextByteOut);
+                        } catch (IOException ioe) {
+                            System.out.println("Error writing to socket");
+                            throw(ioe);
+                        }
+                    }
+				}
+			} catch (ConnectException ce) {
+				System.out.println("Unable to connect to" + server);
+				throw(ce);
+			} catch (IOException ioe) {
+				System.out.println("IOException encountered creating the server or a stream.");
+				System.err.println(ioe);
+				throw(ioe);
+			}
+		}
+	}
+
+
+
+	protected class ReaderThread extends Thread {
+		InputStream input;
+		Socket sock;
+
+		protected ReaderThread (String name, Socket s){
+			this.sock = s;
+			this.input = s.getInputStream;
+			super(name);
+		}
+
+		protected ReaderThread (Socket s) {
+			this.sock = s;
+			this.input = s.getInputStream;
+			super();
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			while(true){
+				int nextByteIn;
+				try {
+					nextByteIn = input.read();
+				} catch (IOException ioe){
+					System.out.println("Error reading from socket");
+					throw(ioe);
+				}
+				if(nextByteIn == -1){
+					break;
+				} else {
+					System.out.write(nextByteIn);
+				}
+			}
+		} catch (ConnectException ce) {
+            System.out.println("Unable to connect to" + server);
+        } catch (IOException ioe) {
+            System.out.println("IOException encountered creating the server or a stream.");
+            System.err.println(ioe);
+        } finally {
+			System.out.flush();
+			sock.close;
+		}
 	}
 }
