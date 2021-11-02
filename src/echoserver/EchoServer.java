@@ -39,7 +39,7 @@ public class EchoServer {
 
 	}
 
-	protected ConnectionRunnable implements Runnable {
+	public class ConnectionRunnable implements Runnable {
 
 		Socket sock;
 
@@ -47,7 +47,30 @@ public class EchoServer {
 			this.sock = s;
 		}
 
-		void run() {
+		@Override
+		public void run() {
+			try {
+				InputStream sockIn = sock.getInputStream();
+				OutputStream sockOut = sock.getOutputStream();
+
+				try {
+					while (true) {
+						int nextByte = sockIn.read();
+						if (nextByte == -1) {
+							break;
+						} else {
+							sockOut.write(nextByte);
+						}
+						
+					}
+				} catch (IOException ioe) {
+					System.err.println(ioe);
+				} finally {
+					sock.shutdownOutput();
+				}
+			} catch (IOException ioe) {
+				System.err.println(ioe);
+			}
 
 		}
 	}
